@@ -6,7 +6,7 @@ int jacobi( const size_t n, double** a, double** vecs, double* vals, const size_
 // eigenvectors returned in vecs and eigenvalues returned in vals
 // number of components of vecs and proper values in vals equals m 
 {
-  // convergence constants
+  // convergence constants  
   const size_t MAXITER = 128;                                              // 128 should be enough
   const double EPS = DBL_EPSILON;                                          // 2.2204460492503131e-16
   const double TOL = sqrt( EPS );                                          // 1.4901161193847656e-08
