@@ -1,0 +1,237 @@
+---
+title: "Partial and Weighted Jacobi"
+author: 
+- Jan de Leeuw - University of California Los Angeles
+date: '`r paste("Started November 07, 2023, Version of",format(Sys.Date(),"%B %d, %Y"))`'
+output:
+  bookdown::pdf_document2:
+    latex_engine: lualatex 
+    includes:
+      in_header: preamble.tex
+    keep_tex: yes
+    toc: true
+    toc_depth: 3
+    number_sections: yes
+  bookdown::html_document2:
+    keep_md: yes
+    css: preamble.css
+    toc: true
+    toc_depth: 3
+    number_sections: yes
+graphics: yes
+mainfont: Times New Roman
+fontsize: 12pt
+bibliography: ["mypubs.bib","total.bib"]
+abstract: TBD
+---
+```{r loadpackages, echo = FALSE}
+#suppressPackageStartupMessages (library (foo, quietly = TRUE))
+```
+
+```{r load code, echo = FALSE}
+source("janUtil.R")
+source("wJacobi.R")
+```
+
+
+**Note:** This is a working paper which will be expanded/updated frequently. All suggestions for improvement are welcome. 
+
+# Introduction
+
+@deleeuw_pruzansky_A_78
+@deleeuw_ferrari_R_08a
+@deleeuw_E_17o
+@deleeuw_E_18g
+
+# Just the formulas
+
+Suppose $A$ is a symmetric matrix of order $n$ and $W$ is a symmetric zero-one matrix of order $n$. We call $A$ the *target* and $W$ the *pattern*. A pattern is *hollow* if it has zero diagonal and *complete* if all off-diagonal elements are positive. 
+
+Using target $A$ and pattern $W$ we define the loss function 
+\begin{equation}
+\sigma(k_1,\cdots,k_n):=\frac14\sij w_{ij}(k_i'Ak_j)^2
+(\#eq:loss)
+\end{equation}
+
+Space $\mathcal{K}_{n_1}\oplus\cdots\oplus\mathcal{K}_{n_p}$
+
+
+Here $(k_1,\cdots,k_n)$ are the $n$ columns of the matrix $K\in\mathcal{K}_n$, the space of all square orthonormal matrices (those with $K'K=KK'=I$, also known as the *rotation* matrices).
+Thus $k_i'k_j=\delta^{ij}$, where the Kronecker delta $\delta^{ij}$
+is equal to one if $i=j$ and equal to zero otherwise.
+
+The problem $\mathbb{P}(A,W)$ we study in this report is computing the minimum and a minimizer of $\sigma$ over $K\in\mathcal{K}_n$. This minimum always exists, because the set $\mathcal{K}_n$ of rotation matrices is compact and the loss function $\sigma$ is continuous and bounded below by zero. The minimum, and the minimizer, are not necessarily unique.
+
+Since there always exists a $K$ for which $K'AK$ is diagonal it follows that the minimum of $\sigma$
+is equal to zero whenever the pattern is hollow. In that case, any complete orthonormal set of eigenvectors of $A$ is a minimizer of \@ref(eq.loss). This result is independent of the off-diagonal elements of $W$.
+
+The minimization problem $\mathbb{P}(A,W)$ also includes the case in which we minimize over
+$p<n$ vectors $k_i$, or equivalently over$K\in\mathcal{K}_{np}$, the Stiefel manifold of all $n\times p$ matrices with $K'K=I$. Simply choose the pattern 
+\begin{equation}
+\begin{bmatrix}
+W_{p\times p}&0_{p\times (n-p)}\\
+0_{(n-p)\times p}&0_{p\times(n-p)}
+\end{bmatrix},
+(\#eq:parpat)
+\end{equation}
+for which
+\begin{equation}
+\sigma(K)=\frac14\sum_{i=1}^p\sum_{j=1}^pw_{ij}(k_i'Ak_j)^2.
+(\#eq:parloss)
+\end{equation}
+If $k_1,\cdots,k_p$ is any set of $p$ orthormal eigenvectors with eigenvalues
+$\lambda_1,\cdots,\lambda_p$ then
+\begin{equation}
+\sigma(K)=\frac14\sum_{i=1}^pw_{ii}^{\ }\lambda_i^2,
+(\#eq:evecloss)
+\end{equation}
+which is of course zero for hollow patterns. This there are many minima in this
+case, all with the same function value zero.
+
+It should be emphasized that most of our results and formulas remain true if $W$ is not binary but  non-negative. 
+
+
+# Derivatives
+
+To get more insight into the loss function \@ref(eq:loss) we compute its first and
+second derivatives. 
+
+The partials with respect to $k_s$ are
+\begin{equation}
+\mathcal{D}_s\sigma(k_1,\cdots k_p)=A\sum_{\ell=1}^nw_{s\ell}(k_s'Ak_\ell)k_\ell.
+(\#eq:grad)
+\end{equation}
+If $A$ is non-singular then $\mathcal{D}_s\sigma(k_1,\cdots k_p)$ is zero if and only if $w_{s\ell}(k_s'Ak_\ell)=0$ for all $\ell$. If $A$ is non-singular and $W$ is hollow and complete then $\mathcal{D}_s\sigma(k_1,\cdots k_p)=0$ if and only if $k_s'Ak_\ell=0$ for all $\ell\not= s$. Thus $Ak_s$ must be orthogonal to all $k_\ell$ with $\ell\not= s$, which means that
+$Ak_s=\lambda_s k_s$, and thus $k_s$ is an eigenvector of $A$ with eigenvalue $\lambda_s$.
+
+If $A$ is singular, say of rank $r<n$, then we can use a basis $L$ for the non-null space of $A$
+and a basis $L_0$ for the null space of $A$. $k_i=Lt_i+L_0s_i$ 
+then $k_i'Ak_j=t_i'L'ALt_j$ and $L'AL$ is non-singular. Thus 
+$$
+\sigma(k_1,\cdots,k_n)=\frac14\sum_{i=1}^n\sum_{j=1}^n w_{st}(t_i'L'ALt_j)^2
+$$
+which must be minimzied over the $t_i$of length $r$.
+
+The Hessian is
+\begin{equation}
+\mathcal{D}_{st}\sigma(k_1,\cdots,k_p)
+=w_{st}(Ax_tx_s'A+(x_t'Ax_s)A)+\delta^{st}\sum_{\ell=1}^nw_{sv}Ax_vx_v'A.
+(\#eq:hess)
+\end{equation}
+
+Thus $w_{st}=0$ implies
+\begin{equation}
+\mathcal{D}_{st}\sigma(x_1,\cdots,x_p)
+=\delta^{st}\sum_{v=1}^pw_{sv}Ax_vx_v'A=\delta^{st}AXW_sX'A,
+(\#eq:hessholl)
+\end{equation}
+with $W_s$ a diagonal matrix with column $s$ of $W$ in the diagonal. For an
+$s\not= t$ with $w_{st}=0$ we have $\mathcal{D}_{st}\sigma(x_1,\cdots,x_p)=0$.
+
+There is R code in the appendix implementing formulas \@ref(eq:grad) and \@ref(eq:hess), as well as
+code for checking the formulas numerically using numDeriv (@gilbert_varadhan_19).
+
+# Jacobi
+
+Following @jacobi_46 we build up $K$ using elementary rotations, constructed by using the unit vectors
+$e_i$, which have element $i$ equal to one and all other elements equal to zero.
+Suppose $T_{ij}(x)$ is a matrix with column $t_i$ equal to $e_i\sin x+e_j\cos x$ and column $x_j$ equal to $e_j\sin x-e_i\cos x$, where $e_i$ and $e_j$ are units vectors. Column $k$ for $k\not\in\{i, j\}$ is equal to $e_k$. More explicitly we could write $X$ as $X_{ij}(\alpha,\beta)$. Clearly $X$ is square orthonormal. 
+
+The general idea of the Jacobi method is that we have an infinite sequence
+$(i(\nu),j(\nu))$ of *pivots*, leading to the infinite sequence
+$X^{\nu}_{i(\nu),j(\nu)}(\alpha^{\nu},\beta^{\nu})$ where &\alpha^{\nu}$ and $\beta^{\nu}$
+are chosen to minimize $\sigma$. We then replace $A^{(\nu)}$ by 
+$A^{(\nu+1)}=$ and $X^{(\nu)}$ by $X^{(\nu+1)}$
+$\overline{X}$ and go to the next pivot in the sequence.
+$$
+X^{(\nu+1)}=X^{(\nu)}T^{\nu}_{i(\nu),j(\nu)}(\alpha^{(\nu)},\beta^{(\nu)})
+$$
+$$
+(\alpha^{(\nu)},\beta^{(\nu)})=\mathop{\text{argmin}}_{\alpha^2+\beta^2=1}\ \sigma()
+$$
+Let's look at the problem of optimizing , i.e. making a single pivot. Then $\sigma$ is a function of $(\alpha,\beta)$ on the unit cicle. Define the symmetric matrix $\overline{A}=X'AX$. Then $\overline{a}_{kl}=x_k'Ax_l$,
+which means that for $k\not= i$ and $k\not= j$ as well as $l\not= i$ and $l\not= j$ we have
+$\overline{a}_{kl}=a_{kl}$. For $k\not\in\{i,j\}$ we have
+\begin{align}
+\overline{a}_{ik}&=x_i'Ae_k=x_i'a_k=\alpha a_{ik}+\beta a_{jk},\\
+\overline{a}_{jk}&=x_j'Ae_k=x_jdiagonal'a_k=-\beta a_{ik}+\alpha a_{jk}.
+\end{align}
+Moreover
+\begin{align}
+\overline{a}_{ij}&=x_i'Ax_j=(\alpha e_i+\beta e_j)'A(\alpha e_j-\beta e_i)=
+(\alpha^2-\beta^2)a_{ij}+\alpha\beta(a_{jj}-a_{ii}),\\
+\overline{a}_{ii}&=x_i'Ax_i=(\alpha e_i+\beta e_j)'A(\alpha e_i+\beta e_j)=
+\alpha^2a_{ii}+\beta^2a_{jj}+2\alpha\beta a_{ij},\\
+\overline{a}_{jj}&=x_j'Ax_j=(-\beta e_i+\alpha e_j)'A(-\beta e_i+\alpha e_j)=
+\beta^2a_{ii}+\alpha^2a_{jj}-2\alpha\beta a_{ij}.
+\end{align}
+In summary
+\begin{equation}
+\overline{a}_{kl}=\begin{cases}
+a_{kl}&\text{ if }k\not=\{i,j\}\text{ and }l\not=\{i,j\},\\
+&\text{ if }k=i\text{ and }l\not=\{i,j\}\text{ or }k\not=\{i,j\}\text{ and }l=i,\\
+&\text{ if }k=j\text{ and }l\not=\{i,j\},\\
+&\text{ if }k=i\text{ and }l=j,\\
+&\text{ if }k=i\text{ and }l=i,\\
+&\text{ if }k=j\text{ and }l=j.
+\end{cases}
+\end{equation}
+
+Thus
+\begin{align}
+\sigma(X)&=\sum_{_{k\not\in\{i,j\}}}^n\sum_{_{l\not\in\{i,j\}}}^nw_{kl}^{\ }a_{kl}^2+\\
+&+2\sum_{k\not\in\{i,j\}}^nw_{ik}(\alpha a_{ik}+\beta a_{jk})^2+\\
+&+2\sum_{k\not\in\{i,j\}}^nw_{jk}(-\beta a_{ik}+\alpha a_{jk})^2+\\
+&+2w_{ij}\{(\alpha^2-\beta^2)a_{ij}+\alpha\beta(a_{jj}-a_{ii})\}^2+\\
+&+w_{ii}(\alpha^2a_{ii}+\beta^2a_{jj}+2\alpha\beta a_{ij})^2+\\
+&+w_{jj}(\beta^2a_{ii}+\alpha^2a_{jj}-2\alpha\beta a_{ij})^2
+\end{align}
+
+```{r figjacobi, fig.align = "center"}
+par(pty="s")
+jacobiPlot(2, 5, 9)
+```
+
+Trigonometry
+
+$\alpha=\sin(\theta)$ and $\beta=\cos(\theta)$
+
+# The Sequence
+
+The *strategy*
+
+# Majorization
+
+\begin{multline}
+\sigma(y_1,\cdots,y_p)=\sigma(x_1+(y_1-x_1),\cdots,x_p+(y_p-x_p))\leq\\
+\sigma(x_1,\cdots,x_p)+\sum_{s=1}^p(y_s-x_s)'\mathcal{D}_s\sigma(x_1,\cdots,x_p)+\\
+\frac12\max_{0\leq\theta\leq 1}\sum_{s=1}^p\sum_{t=1}^p (y_s-x_s)'\{\mathcal{D}_{st}\sigma(x_1+\theta(x_1-y_1),\cdots,x_p+\theta(x_p-y_p))\}(y_t-x_t).
+\end{multline}
+
+# Applications
+
+## Symmetric Matrices
+
+All eigenvalues
+Some eigenvalues
+
+## Pairs of Matrices
+
+## Rectangular Matrices
+
+## Simultaneous Diagonalization
+
+## DMCA
+
+## GCCA
+
+
+
+# Appendix: Code
+
+## pattern.R
+
+```{r file_auxilary, code = readLines("janUtil.R")}
+```
+
+# References
